@@ -1,0 +1,21 @@
+#transaction-button-container {
+    width: 40%;
+    display: flex;
+    justify-content: space-between;
+}
+#transaction-button {
+    padding: 0;
+    margin: 0;
+    width: 5rem;
+    height: 5rem;
+    border: 0.1rem solid #707070;
+    border-radius: 50%;
+    background-color: #FFF;
+    font-size: 3rem;
+    font-weight: 100;
+}
+
+#transaction-button:active {
+    background-color: #707070;
+    color: #FFF;
+}

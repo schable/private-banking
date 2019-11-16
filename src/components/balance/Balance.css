@@ -1,0 +1,13 @@
+#balance-container {
+    margin: 0;
+    height: 25vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 3.5rem;
+}
+
+#currency {
+    font-size: 1rem;
+    vertical-align: top;
+}

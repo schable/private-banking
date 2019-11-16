@@ -1,26 +1,16 @@
-import React from 'react';
-import logo from './logo.svg';
-import './App.css';
+import React from 'react'
+import './App.css'
+import { BalanceContainer } from './components/balance/BalanceContainer'
+import { TransactionContainer } from './components/transaction/TransactionContainer'
+import * as PropTypes from 'prop-types'
 
-function App() {
-  return (
+const App = () => (
     <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
+        <BalanceContainer />
+        <TransactionContainer />
     </div>
-  );
-}
+)
 
-export default App;
+App.propTypes = { store: PropTypes.any }
+
+export default App

@@ -1,0 +1,16 @@
+#transaction-container {
+    display: flex;
+    height: 25vh;
+    flex-direction: column;
+    align-items: center;
+    justify-content: space-around;
+}
+
+#transaction-input {
+    color: inherit;
+    width: 40%;
+    border: none;
+    border-bottom: 0.1rem solid #707070;
+    font-size: 2.5rem;
+    text-align: center;
+}
