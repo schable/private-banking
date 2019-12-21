@@ -38,3 +38,8 @@ export const encryptAndDecrypt = async data => {
     // decryptedTransaction = await decrypt(decryptedMasterAESKey, encryptedTransaction)
     // console.log(decryptedTransaction) // { foo: 'bar' }
 }
+
+export const generateUnencryptedMasterKey = async masterPassword => {
+    const encryptedMasterAESKey = await genEncryptedMasterKey(masterPassword)
+    return await decryptMasterKey(masterPassword, encryptedMasterAESKey)
+}

@@ -1,13 +1,16 @@
+import * as PropTypes from 'prop-types'
 import React from 'react'
 import './App.css'
 import { BalanceContainer } from './components/balance/BalanceContainer'
+import { Login } from './components/Login'
 import { TransactionContainer } from './components/transaction/TransactionContainer'
-import * as PropTypes from 'prop-types'
 
 const App = () => (
     <div className="App">
-        <BalanceContainer />
-        <TransactionContainer />
+        <Login>
+            <BalanceContainer />
+            <TransactionContainer />
+        </Login>
     </div>
 )
 
