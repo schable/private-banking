@@ -1590,7 +1590,7 @@
     lz-string "^1.4.4"
     pretty-format "^26.6.2"
 
-"@testing-library/jest-dom@^5.11.4":
+"@testing-library/jest-dom@^5.11.8":
   version "5.11.8"
   resolved "https://registry.yarnpkg.com/@testing-library/jest-dom/-/jest-dom-5.11.8.tgz#433a84d6f9a089485101b9e112ef03e5c30bcbfc"
   integrity sha512-ScyKrWQM5xNcr79PkSewnA79CLaoxVskE+f7knTOhDD9ftZSA1Jw8mj+pneqhEu3x37ncNfW84NUr7lqK+mXjA==
@@ -1604,7 +1604,7 @@
     lodash "^4.17.15"
     redent "^3.0.0"
 
-"@testing-library/react@^11.1.0":
+"@testing-library/react@^11.2.3":
   version "11.2.3"
   resolved "https://registry.yarnpkg.com/@testing-library/react/-/react-11.2.3.tgz#9971ede1c8465a231d7982eeca3c39fc362d5443"
   integrity sha512-BirBUGPkTW28ULuCwIbYo0y2+0aavHczBT6N9r3LrsswEW3pg25l1wgoE7I8QBIy1upXWkwKpYdWY7NYYP0Bxw==
@@ -4194,6 +4194,11 @@ duplexify@^3.4.2, duplexify@^3.6.0:
     inherits "^2.0.1"
     readable-stream "^2.0.0"
     stream-shift "^1.0.0"
+
+easy-web-crypto@^1.2.2:
+  version "1.2.2"
+  resolved "https://registry.yarnpkg.com/easy-web-crypto/-/easy-web-crypto-1.2.2.tgz#922b50204d640bc16fd42df3360dab60a402dbae"
+  integrity sha512-ZogxQFajL6kQlQphL5eES0TaXkW9Nb1U/93MYs31/7ngBZLV+Y+djBnt6ZTlRgSdDQszMfqbxGFfbXjmBThHLA==
 
 ecc-jsbn@~0.1.1:
   version "0.1.2"
