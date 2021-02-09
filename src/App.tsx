@@ -7,7 +7,7 @@ import { SignIn } from './pages/SignIn'
 import { TransactionRepository } from './repositories/transactionRepository'
 
 const App = () => {
-  const [transactionRepository, setTransactionRepository] = useState<TransactionRepository | undefined>()
+  const [transactionRepository, setTransactionRepository] = useState<TransactionRepository | undefined>(undefined)
  
   return transactionRepository
     ? <Home transactionRepository={transactionRepository}/>

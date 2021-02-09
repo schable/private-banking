@@ -1,5 +1,5 @@
-import React, { useState } from 'react'
-import { logUserIn } from '../repositories/userRepository'
+import React, { useEffect, useState } from 'react'
+import { createUserSession, retrieveUserSession } from '../repositories/userRepository'
 import { TransactionRepository } from '../repositories/transactionRepository'
 import { Loader } from '../components/Loader'
 
@@ -7,6 +7,16 @@ export const SignIn = (props: { setTransactionRepository: (transactionRepository
     const [passphrase, setPassphrase] = useState<string>('')
     const [username, setUsername] = useState<string>('')
     const [isLoading, setIsLoading] = useState<boolean>(false)
+
+    useEffect(() => {
+        setIsLoading(true)
+        retrieveUserSession()
+            .then((transactionRepository: TransactionRepository | null): void => {
+                transactionRepository && props.setTransactionRepository(transactionRepository)
+            })
+            .catch(error => console.log(error))
+            .finally(() => setIsLoading(false))
+    }, [props])
 
     const onInputChange = (event: React.ChangeEvent<HTMLInputElement>): void => {
         switch (event.target.name) {
@@ -22,9 +32,12 @@ export const SignIn = (props: { setTransactionRepository: (transactionRepository
     const signIn = (event: React.FormEvent<HTMLFormElement>): void => {
         event.preventDefault()
         setIsLoading(true)
-        logUserIn(username, passphrase).then((transactionRepository: TransactionRepository): void => {
-            props.setTransactionRepository(transactionRepository)
-        }).finally(() => setIsLoading(false))
+        createUserSession(username, passphrase)
+            .then((transactionRepository: TransactionRepository): void => {
+                props.setTransactionRepository(transactionRepository)
+            })
+            .catch(error => console.log(error))
+            .finally(() => setIsLoading(false))
     }
 
     return isLoading
@@ -34,7 +47,7 @@ export const SignIn = (props: { setTransactionRepository: (transactionRepository
                 <h1>{'S\'identifier'}</h1>
                 <label>
                     {'Nom d\'utilisateur'}
-                    <input onChange={onInputChange} name="username" type="text" value={username}></input>
+                    <input onChange={onInputChange} name="username" type="text" value={username} />
                 </label>
                 <label>
                     {'Phrase de passe'}
