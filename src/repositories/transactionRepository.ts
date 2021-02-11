@@ -24,21 +24,45 @@ export class TransactionRepository {
         })
     }
 
-    public async saveEncryptedTransaction(transaction: Transaction): Promise<Transaction | undefined> {
+    public async saveEncryptedTransactions(transactions: Transaction[]): Promise<Transaction[]> {
         const collectionManager = this.userAccount.getCollectionManager()
         const transactionsCollection = await this._getTransactionsCollection(collectionManager)
         const itemManager = collectionManager.getItemManager(transactionsCollection)
+        const items: Etebase.Item[] = await this._buildEncryptedItems(transactions, itemManager)
+        await itemManager.batch(items)
 
-        const item = await itemManager.create(
-            {
-                mtime: new Date().getTime(),
-            },
-            JSON.stringify(transaction),
+        return await this._buildDecryptedTransactions(items)
+    }
+
+    private async _buildEncryptedItems(transactions: Transaction[], itemManager: Etebase.ItemManager): Promise<Etebase.Item[]> {
+        const encryptingItems = transactions.reduce<Promise<Etebase.Item>[]>((encryptingItems, transaction) => {
+            const encryptingItem: Promise<Etebase.Item> = itemManager.create(
+                {
+                    mtime: new Date().getTime(),
+                },
+                JSON.stringify(transaction),
+            )
+            return [...encryptingItems, encryptingItem]
+        }, [])
+
+        return Promise.all(encryptingItems)
+    }
+
+    private async _buildDecryptedTransactions(items: Etebase.Item[]): Promise<Transaction[]> {
+        return Promise.all(
+            items.reduce<Promise<Transaction>[]>((allTransactions, item) => {
+                return [
+                    ...allTransactions,
+                    item.getContent(Etebase.OutputFormat.String)
+                        .then((stringifiedItem) => {
+                            return TransactionRepository._buildTransaction(item.uid, stringifiedItem)
+                        })
+                        .then((transaction) => {
+                            return transaction
+                        })
+                ]
+            }, [])
         )
-        await itemManager.batch([item])
-        const stringifiedCreatedTransaction = await item.getContent(Etebase.OutputFormat.String)
-        const createdTransactionId = item.uid
-        return TransactionRepository._buildTransaction(createdTransactionId, stringifiedCreatedTransaction)
     }
 
     public async deleteTransaction(transactionId: string | null): Promise<void> {

@@ -5,6 +5,7 @@ import { Transaction } from '../domain/Transaction'
 import { Transactions } from '../components/Transactions'
 import { AccountsBalances } from '../components/AccountsBalances'
 import { Loader } from '../components/Loader'
+import { ImportFromCsv } from '../components/ImportFromCsv'
 
 export const Home = (prop: { transactionRepository: TransactionRepository }): JSX.Element => {
     const [transactions, setTransactions] = useState<Array<Transaction>>([])
@@ -21,11 +22,11 @@ export const Home = (prop: { transactionRepository: TransactionRepository }): JS
     const saveNewTransaction = (newTransaction: Transaction): void => {
         setIsLoading(true)
         prop.transactionRepository
-            .saveEncryptedTransaction(newTransaction)
-            .then((savedTransaction: Transaction | undefined): void => {
-            setIsLoading(false)
-            savedTransaction && setTransactions([...transactions, savedTransaction])
-        })
+            .saveEncryptedTransactions([newTransaction])
+            .then((savedTransactions: Transaction[]): void => {
+                setIsLoading(false)
+                savedTransactions && setTransactions([...transactions, ...savedTransactions])
+            })
     }
 
     const deleteTransaction = (transactionId: string): void => {
@@ -47,6 +48,7 @@ export const Home = (prop: { transactionRepository: TransactionRepository }): JS
                 <TransactionForm submitTransaction={saveNewTransaction} />
                 <Transactions deleteTransaction={deleteTransaction} transactions={transactions} />
                 <AccountsBalances transactions={transactions} />
+                <ImportFromCsv />
             </>
         )
 
