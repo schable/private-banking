@@ -4,6 +4,11 @@ import config from '../config'
 
 const SAVED_SESSION_KEY = 'savedSession'
 
+export const signUserUp = (username: string, email: string, passphrase: string): Promise<TransactionRepository> => {
+    return Etebase.Account.signup({ username: username, email: email }, passphrase, config.apiUrl)
+        .then(etebase => new TransactionRepository(etebase))
+}
+
 export const createUserSession = (username: string, passphrase: string): Promise<TransactionRepository> => {
     return Etebase.Account.login(username, passphrase, config.apiUrl)
         .then((etebase: Etebase.Account) => {
@@ -12,17 +17,15 @@ export const createUserSession = (username: string, passphrase: string): Promise
         })
 }
 
-export const signUserUp = (username: string, email: string, passphrase: string): Promise<TransactionRepository> => {
-    return Etebase.Account.signup({ username: username, email: email }, passphrase, config.apiUrl)
-        .then(etebase => new TransactionRepository(etebase))
-}
-
 export const retrieveUserSession = (): Promise<TransactionRepository | null> => {
     const savedSession = sessionStorage.getItem(SAVED_SESSION_KEY)
     if (!savedSession) return Promise.resolve(null)
 
     return Etebase.Account.restore(savedSession)
         .then((etebase: Etebase.Account) => new TransactionRepository(etebase))
+        .catch(error => {
+            throw new Error('Error occurred while trying to restore saved session. Error: ' + error.message)
+        })
 }
 
 

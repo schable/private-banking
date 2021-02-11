@@ -34,37 +34,6 @@ export class TransactionRepository {
         return await this._buildDecryptedTransactions(items)
     }
 
-    private async _buildEncryptedItems(transactions: Transaction[], itemManager: Etebase.ItemManager): Promise<Etebase.Item[]> {
-        const encryptingItems = transactions.reduce<Promise<Etebase.Item>[]>((encryptingItems, transaction) => {
-            const encryptingItem: Promise<Etebase.Item> = itemManager.create(
-                {
-                    mtime: new Date().getTime(),
-                },
-                JSON.stringify(transaction),
-            )
-            return [...encryptingItems, encryptingItem]
-        }, [])
-
-        return Promise.all(encryptingItems)
-    }
-
-    private async _buildDecryptedTransactions(items: Etebase.Item[]): Promise<Transaction[]> {
-        return Promise.all(
-            items.reduce<Promise<Transaction>[]>((allTransactions, item) => {
-                return [
-                    ...allTransactions,
-                    item.getContent(Etebase.OutputFormat.String)
-                        .then((stringifiedItem) => {
-                            return TransactionRepository._buildTransaction(item.uid, stringifiedItem)
-                        })
-                        .then((transaction) => {
-                            return transaction
-                        })
-                ]
-            }, [])
-        )
-    }
-
     public async deleteTransaction(transactionId: string | null): Promise<void> {
         if (transactionId) {
             const collectionManager = this.userAccount.getCollectionManager()
@@ -76,16 +45,11 @@ export class TransactionRepository {
         }
     }
 
-    private static _buildTransaction(transactionId: string, transactionContent: string): Transaction {
-        const parsedTransactionContent = JSON.parse(transactionContent)
-        const transactionDate = new Date(parsedTransactionContent.date)
-        return new Transaction(
-            parsedTransactionContent.amount,
-            parsedTransactionContent.bank,
-            transactionDate,
-            parsedTransactionContent.description,
-            transactionId,
-        )
+    private async _getEncryptedItems(collectionManager: Etebase.CollectionManager): Promise<Etebase.Item[]> {
+        const transactionsCollection = await this._getTransactionsCollection(collectionManager)
+        const itemManager = collectionManager.getItemManager(transactionsCollection)
+        const itemsContainer = await itemManager.list()
+        return itemsContainer.data
     }
 
     private async _getTransactionsCollection(collectionManager: Etebase.CollectionManager): Promise<Etebase.Collection> {
@@ -100,10 +64,46 @@ export class TransactionRepository {
         }
     }
 
-    private async _getEncryptedItems(collectionManager: Etebase.CollectionManager): Promise<Etebase.Item[]> {
-        const transactionsCollection = await this._getTransactionsCollection(collectionManager)
-        const itemManager = collectionManager.getItemManager(transactionsCollection)
-        const itemsContainer = await itemManager.list()
-        return itemsContainer.data
+    private _buildEncryptedItems(transactions: Transaction[], itemManager: Etebase.ItemManager): Promise<Etebase.Item[]> {
+        const encryptingItems = transactions.reduce<Promise<Etebase.Item>[]>((encryptingItems, transaction) => {
+            const encryptingItem: Promise<Etebase.Item> = itemManager.create(
+                {
+                    mtime: new Date().getTime(),
+                },
+                JSON.stringify(transaction),
+            )
+            return [...encryptingItems, encryptingItem]
+        }, [])
+
+        return Promise.all(encryptingItems)
+    }
+
+    private _buildDecryptedTransactions(items: Etebase.Item[]): Promise<Transaction[]> {
+        return Promise.all(
+            items.reduce<Promise<Transaction>[]>((allTransactions, item) => {
+                return [
+                    ...allTransactions,
+                    item.getContent(Etebase.OutputFormat.String)
+                        .then((stringifiedItem) => {
+                            return TransactionRepository._buildTransaction(item.uid, stringifiedItem)
+                        })
+                        .then((transaction) => {
+                            return transaction
+                        }),
+                ]
+            }, []),
+        )
+    }
+
+    private static _buildTransaction(transactionId: string, transactionContent: string): Transaction {
+        const parsedTransactionContent = JSON.parse(transactionContent)
+        const transactionDate = new Date(parsedTransactionContent.date)
+        return new Transaction(
+            parsedTransactionContent.amount,
+            parsedTransactionContent.bank,
+            transactionDate,
+            parsedTransactionContent.description,
+            transactionId,
+        )
     }
 }
