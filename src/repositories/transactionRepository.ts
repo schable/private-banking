@@ -11,9 +11,9 @@ export class TransactionRepository {
 
     public TRANSACTIONS_COLLECTION_NAME: string = 'Bank transactions'
 
-    public async getDecryptedTransactions(): Promise<Transaction[]> {
+    public async getAllDecryptedTransactions(): Promise<Transaction[]> {
         const collectionManager = this.userAccount.getCollectionManager()
-        const items: Etebase.Item[] = await this._getEncryptedItems(collectionManager)
+        const items: Etebase.Item[] = await this._getEncryptedItems(collectionManager, Number.MAX_SAFE_INTEGER)
         const nonDeletedItems = items.filter((item: Etebase.Item): boolean => !item.isDeleted)
         const transactionsContentAndId: Promise<[string, string]>[] = nonDeletedItems.map(async (item: Etebase.Item): Promise<[string, string]> => [await item.getContent(Etebase.OutputFormat.String), item.uid])
         const resolvedTransactionsContentAndId: [string, string][] = await Promise.all(transactionsContentAndId)
@@ -24,21 +24,14 @@ export class TransactionRepository {
         })
     }
 
-    public async saveEncryptedTransaction(transaction: Transaction): Promise<Transaction | undefined> {
+    public async saveEncryptedTransactions(transactions: Transaction[]): Promise<Transaction[]> {
         const collectionManager = this.userAccount.getCollectionManager()
         const transactionsCollection = await this._getTransactionsCollection(collectionManager)
         const itemManager = collectionManager.getItemManager(transactionsCollection)
+        const items: Etebase.Item[] = await this._buildEncryptedItems(transactions, itemManager)
+        await itemManager.batch(items)
 
-        const item = await itemManager.create(
-            {
-                mtime: new Date().getTime(),
-            },
-            JSON.stringify(transaction),
-        )
-        await itemManager.batch([item])
-        const stringifiedCreatedTransaction = await item.getContent(Etebase.OutputFormat.String)
-        const createdTransactionId = item.uid
-        return TransactionRepository._buildTransaction(createdTransactionId, stringifiedCreatedTransaction)
+        return await this._buildDecryptedTransactions(items)
     }
 
     public async deleteTransaction(transactionId: string | null): Promise<void> {
@@ -52,16 +45,11 @@ export class TransactionRepository {
         }
     }
 
-    private static _buildTransaction(transactionId: string, transactionContent: string): Transaction {
-        const parsedTransactionContent = JSON.parse(transactionContent)
-        const transactionDate = new Date(parsedTransactionContent.date)
-        return new Transaction(
-            parsedTransactionContent.amount,
-            parsedTransactionContent.bank,
-            transactionDate,
-            parsedTransactionContent.description,
-            transactionId,
-        )
+    private async _getEncryptedItems(collectionManager: Etebase.CollectionManager, maxNumberOfItems: number): Promise<Etebase.Item[]> {
+        const transactionsCollection = await this._getTransactionsCollection(collectionManager)
+        const itemManager = collectionManager.getItemManager(transactionsCollection)
+        const itemsContainer = await itemManager.list({limit: maxNumberOfItems})
+        return itemsContainer.data
     }
 
     private async _getTransactionsCollection(collectionManager: Etebase.CollectionManager): Promise<Etebase.Collection> {
@@ -76,10 +64,46 @@ export class TransactionRepository {
         }
     }
 
-    private async _getEncryptedItems(collectionManager: Etebase.CollectionManager): Promise<Etebase.Item[]> {
-        const transactionsCollection = await this._getTransactionsCollection(collectionManager)
-        const itemManager = collectionManager.getItemManager(transactionsCollection)
-        const itemsContainer = await itemManager.list()
-        return itemsContainer.data
+    private _buildEncryptedItems(transactions: Transaction[], itemManager: Etebase.ItemManager): Promise<Etebase.Item[]> {
+        const encryptingItems = transactions.reduce<Promise<Etebase.Item>[]>((encryptingItems, transaction) => {
+            const encryptingItem: Promise<Etebase.Item> = itemManager.create(
+                {
+                    mtime: new Date().getTime(),
+                },
+                JSON.stringify(transaction),
+            )
+            return [...encryptingItems, encryptingItem]
+        }, [])
+
+        return Promise.all(encryptingItems)
+    }
+
+    private _buildDecryptedTransactions(items: Etebase.Item[]): Promise<Transaction[]> {
+        return Promise.all(
+            items.reduce<Promise<Transaction>[]>((allTransactions, item) => {
+                return [
+                    ...allTransactions,
+                    item.getContent(Etebase.OutputFormat.String)
+                        .then((stringifiedItem) => {
+                            return TransactionRepository._buildTransaction(item.uid, stringifiedItem)
+                        })
+                        .then((transaction) => {
+                            return transaction
+                        }),
+                ]
+            }, []),
+        )
+    }
+
+    private static _buildTransaction(transactionId: string, transactionContent: string): Transaction {
+        const parsedTransactionContent = JSON.parse(transactionContent)
+        const transactionDate = new Date(parsedTransactionContent.date)
+        return new Transaction(
+            parsedTransactionContent.amount,
+            parsedTransactionContent.bank,
+            transactionDate,
+            parsedTransactionContent.description,
+            transactionId,
+        )
     }
 }
