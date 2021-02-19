@@ -11,9 +11,9 @@ export class TransactionRepository {
 
     public TRANSACTIONS_COLLECTION_NAME: string = 'Bank transactions'
 
-    public async getDecryptedTransactions(): Promise<Transaction[]> {
+    public async getAllDecryptedTransactions(): Promise<Transaction[]> {
         const collectionManager = this.userAccount.getCollectionManager()
-        const items: Etebase.Item[] = await this._getEncryptedItems(collectionManager)
+        const items: Etebase.Item[] = await this._getEncryptedItems(collectionManager, Number.MAX_SAFE_INTEGER)
         const nonDeletedItems = items.filter((item: Etebase.Item): boolean => !item.isDeleted)
         const transactionsContentAndId: Promise<[string, string]>[] = nonDeletedItems.map(async (item: Etebase.Item): Promise<[string, string]> => [await item.getContent(Etebase.OutputFormat.String), item.uid])
         const resolvedTransactionsContentAndId: [string, string][] = await Promise.all(transactionsContentAndId)
@@ -45,10 +45,10 @@ export class TransactionRepository {
         }
     }
 
-    private async _getEncryptedItems(collectionManager: Etebase.CollectionManager): Promise<Etebase.Item[]> {
+    private async _getEncryptedItems(collectionManager: Etebase.CollectionManager, maxNumberOfItems: number): Promise<Etebase.Item[]> {
         const transactionsCollection = await this._getTransactionsCollection(collectionManager)
         const itemManager = collectionManager.getItemManager(transactionsCollection)
-        const itemsContainer = await itemManager.list()
+        const itemsContainer = await itemManager.list({limit: maxNumberOfItems})
         return itemsContainer.data
     }
 

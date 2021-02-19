@@ -98,7 +98,7 @@ describe('retrieveUserSession', () => {
     it('should throw error if cannot restore existing session', async () => {
         // Given
         expect.assertions(1)
-        mockedEtebaseAccountRestore.mockRejectedValue('mocked error message')
+        mockedEtebaseAccountRestore.mockRejectedValue(new Error('mocked error message'))
 
         // When
         try {

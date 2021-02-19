@@ -6,7 +6,9 @@ const getTwoDigitNumber = (number: number): string => {
     return number < 10 ? `0${number}` : `${number}`
 }
 
-export const TransactionForm = (prop: { submitTransaction: (newTransaction: Transaction) => void }): JSX.Element => {
+type TransactionFormProps = { submitTransaction: (newTransaction: Transaction[]) => void }
+
+export const TransactionForm = (prop: TransactionFormProps): JSX.Element => {
     const [amount, setAmount] = useState<string>('')
     const [date, setDate] = useState<Date>(new Date())
     const [description, setDescription] = useState<string>('')
@@ -25,7 +27,7 @@ export const TransactionForm = (prop: { submitTransaction: (newTransaction: Tran
 
     const onTransactionValidation = (bank: Bank) => () => {
         const newTransaction = new Transaction(Number(amount), bank, date, description)
-        prop.submitTransaction(newTransaction)
+        prop.submitTransaction([newTransaction])
     }
 
     const dateFieldValue = `${date.getFullYear()}-${getTwoDigitNumber(date.getMonth() + 1)}-${getTwoDigitNumber(date.getDate())}`

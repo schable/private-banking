@@ -14,7 +14,7 @@ const mockedEtebaseItemManagerFetch = jest.fn() as jest.MockedFunction<typeof Et
 const mockedEtebaseItemGetContent = jest.fn() as jest.MockedFunction<typeof Etebase.Item.prototype.getContent>
 
 
-describe('getDecryptedTransactions', () => {
+describe('getAllDecryptedTransactions', () => {
     it('should retrieve encrypted items from server', async () => {
         // Given
         const mockedEtebaseItem = {
@@ -50,7 +50,7 @@ describe('getDecryptedTransactions', () => {
         mockedEtebaseItemManagerFetch.mockResolvedValue({} as jest.Mocked<Etebase.Item>)
 
         // When
-        const transactions = await new TransactionRepository({getCollectionManager: mockedEtebaseAccountGetCollectionManager} as jest.Mocked<Etebase.Account>).getDecryptedTransactions()
+        const transactions = await new TransactionRepository({getCollectionManager: mockedEtebaseAccountGetCollectionManager} as jest.Mocked<Etebase.Account>).getAllDecryptedTransactions()
 
         // Then
         expect(mockedEtebaseAccountGetCollectionManager).toHaveBeenCalledTimes(1)

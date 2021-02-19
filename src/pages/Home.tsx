@@ -12,17 +12,17 @@ export const Home = (prop: { transactionRepository: TransactionRepository }): JS
     const [isLoading, setIsLoading] = useState<boolean>(true)
 
     useEffect((): void => {
-        prop.transactionRepository.getDecryptedTransactions()
+        prop.transactionRepository.getAllDecryptedTransactions()
             .then(transactions => {
                 setTransactions(transactions)
                 setIsLoading(false)
             })
     }, [prop.transactionRepository])
 
-    const saveNewTransaction = (newTransaction: Transaction): void => {
+    const saveNewTransactions = (newTransactions: Transaction[]): void => {
         setIsLoading(true)
         prop.transactionRepository
-            .saveEncryptedTransactions([newTransaction])
+            .saveEncryptedTransactions(newTransactions)
             .then((savedTransactions: Transaction[]): void => {
                 setIsLoading(false)
                 savedTransactions && setTransactions([...transactions, ...savedTransactions])
@@ -45,10 +45,11 @@ export const Home = (prop: { transactionRepository: TransactionRepository }): JS
         ? <Loader />
         : (
             <>
-                <TransactionForm submitTransaction={saveNewTransaction} />
+                <TransactionForm submitTransaction={saveNewTransactions} />
                 <Transactions deleteTransaction={deleteTransaction} transactions={transactions} />
                 <AccountsBalances transactions={transactions} />
-                <ImportFromCsv />
+                <div>Nb de transactions: {transactions.length}</div>
+                <ImportFromCsv saveTransactions={saveNewTransactions}/>
             </>
         )
 
