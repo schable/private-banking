@@ -45,10 +45,26 @@ export class TransactionRepository {
         }
     }
 
+    public async deleteAllTransactions(): Promise<void> {
+        const collectionManager = this.userAccount.getCollectionManager()
+        const transactionsCollection = await this._getTransactionsCollection(collectionManager)
+        const itemManager = collectionManager.getItemManager(transactionsCollection)
+        const itemsContainer = await itemManager.list({ limit: Number.MAX_SAFE_INTEGER })
+        const allItems = itemsContainer.data
+        const deletedItems = allItems.reduce((deletedItems: Etebase.Item[], item: Etebase.Item): Etebase.Item[] => {
+            if (!item.isDeleted) {
+                item.delete()
+                return [...deletedItems, item]
+            }
+            return deletedItems
+        }, [])
+        await itemManager.batch(deletedItems)
+    }
+
     private async _getEncryptedItems(collectionManager: Etebase.CollectionManager, maxNumberOfItems: number): Promise<Etebase.Item[]> {
         const transactionsCollection = await this._getTransactionsCollection(collectionManager)
         const itemManager = collectionManager.getItemManager(transactionsCollection)
-        const itemsContainer = await itemManager.list({limit: maxNumberOfItems})
+        const itemsContainer = await itemManager.list({ limit: maxNumberOfItems })
         return itemsContainer.data
     }
 

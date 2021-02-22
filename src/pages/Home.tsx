@@ -41,6 +41,12 @@ export const Home = (prop: { transactionRepository: TransactionRepository }): JS
             })
     }
 
+    const deleteAllTransactions = () => {
+        setIsLoading(true)
+        prop.transactionRepository.deleteAllTransactions()
+            .then(() => setIsLoading(false))
+    }
+
     return isLoading
         ? <Loader />
         : (
@@ -48,8 +54,11 @@ export const Home = (prop: { transactionRepository: TransactionRepository }): JS
                 <TransactionForm submitTransaction={saveNewTransactions} />
                 <Transactions deleteTransaction={deleteTransaction} transactions={transactions} />
                 <AccountsBalances transactions={transactions} />
-                <div>Nb de transactions: {transactions.length}</div>
-                <ImportFromCsv saveTransactions={saveNewTransactions}/>
+                <p>Nb de transactions: {transactions.length}</p>
+                <button onClick={deleteAllTransactions} type="button">
+                    {'ATTENTION: Supprimer toutes les transactions'}
+                </button>
+                <ImportFromCsv saveTransactions={saveNewTransactions} />
             </>
         )
 

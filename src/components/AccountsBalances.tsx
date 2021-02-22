@@ -12,10 +12,12 @@ export const AccountsBalances = (props: { transactions: Transaction[] }): JSX.El
 
     return (
         <>
-            <div>{`Total : ${totalBalance}`}</div>
-            <div>{'Sous-totaux :'}</div>
-            <div>{`${Bank[Bank.Boursorama]} : ${totalBoursorama}`}</div>
-            <div>{`${Bank[Bank.Fortuneo]} : ${totalFortuneo}`}</div>
+            <p>{`Total : ${totalBalance}`}</p>
+            <p>{'Sous-totaux :'}</p>
+            <ul>
+                <li>{`${Bank[Bank.Boursorama]} : ${totalBoursorama}`}</li>
+                <li>{`${Bank[Bank.Fortuneo]} : ${totalFortuneo}`}</li>
+            </ul>
         </>
 
     )
